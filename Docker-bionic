@@ -1,0 +1,7 @@
+FROM ubuntu:bionic 
+WORKDIR /build
+COPY ./security/security.bash /build/security.bash
+RUN bash /build/security.bash
+RUN apt install python3
+RUN rm -rv /build
+
