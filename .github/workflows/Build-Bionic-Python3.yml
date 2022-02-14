@@ -1,0 +1,25 @@
+name: Build-Bionic-Python3
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image ...
+      run: docker build . --file Docker-bionic --tag ${{ secrets.DOCKER_USERNAME }}/ubuntu-python:bionic
+    - name: Upload to docker hub ...
+      run: docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+    - name: Push to docker hub ...
+      run: docker push ${{ secrets.DOCKER_USERNAME }}/ubuntu-python:bionic
+    - name: Docker Cleanup ...
+      run: docker system prune --all --force   
