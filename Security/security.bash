@@ -4,6 +4,15 @@
 # https://github.com/ukncsc/Device-Security-Guidance-Configuration-Packs/tree/main/Linux/UbuntuLTS
 
 echo -e "${HIGHLIGHT}Running system updates...${NC}"
+# changing sources list to use mirror instead of ubuntu main report
+echo "
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu bionic-security main restricted universe multiverse
+" | tee /etc/apt/sources.list
+# also makes it faster
+
 # Update.
 apt-get update
 # Upgrade.

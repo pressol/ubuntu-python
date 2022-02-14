@@ -1,4 +1,4 @@
-FROM ubuntu:focal 
+FROM ubuntu:bionic 
 WORKDIR /build
 COPY ./Security/security.bash /build/security.bash
 RUN bash /build/security.bash
