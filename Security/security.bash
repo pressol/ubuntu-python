@@ -70,5 +70,3 @@ chmod o-w /var/tmp
 # Setting up firewall without any rules.
 echo -e "${HIGHLIGHT}Configuring firewall…  ${NC}"
 ufw enable	
-
-reboot now
