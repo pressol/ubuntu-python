@@ -12,7 +12,7 @@ apt-get dist-upgrade -y
 apt-get remove -y popularity-contest
 # And install required packages.
 apt-get install -y apparmor-profiles apparmor-utils auditd 
-apt-get install -y clamav clamav-daemon
+apt-get install -y clamav clamav-daemon ufw 
 
 # Update fstab.
 echo -e "${HIGHLIGHT}Writing fstab config...${NC}"
@@ -78,17 +78,7 @@ echo "# Monitor administrator access to /home directories
 -a always,exit -F dir=/home/ -F uid=0 -C auid!=obj_uid -k admin_home_user" > /etc/audit/rules.d/admin-home-watch.rules
 fi
 augenrules
-systemctl restart auditd.service
 
-# Disable error reporting services
-echo -e "${HIGHLIGHT}Configuring error reporting...${NC}"
-systemctl stop apport.service
-systemctl disable apport.service
-systemctl mask apport.service
-
-systemctl stop whoopsie.service
-systemctl disable whoopsie.service
-systemctl mask whoopsie.service
 
 # disable location services
 echo "
@@ -106,12 +96,6 @@ report-technical-problems=false" >> /etc/dconf/db/local.d/00_custom-lock
 echo "/org/gnome/desktop/privacy/report-technical-problems" >> /etc/dconf/db/local.d/locks/00_custom-lock
 
 dconf update
-
-# Fix dconf permissions, otherwise option locks don't apply upon subsequent script executions
-chmod 644 -R /etc/dconf/db/
-chmod a+x /etc/dconf/db/local.d/locks
-chmod a+x /etc/dconf/db/local.d
-chmod a+x /etc/dconf/db
 
 # Disable apport (error reporting)
 sed -ie '/^enabled=1$/ s/1/0/' /etc/default/apport
