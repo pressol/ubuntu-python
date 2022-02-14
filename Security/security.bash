@@ -14,45 +14,6 @@ apt-get remove -y popularity-contest
 apt-get install -y apparmor-profiles apparmor-utils auditd 
 apt-get install -y clamav clamav-daemon ufw 
 
-# Update fstab.
-echo -e "${HIGHLIGHT}Writing fstab config...${NC}"
-sed -ie '/\s\/home\s/ s/defaults/defaults,noexec,nosuid,nodev/' /etc/fstab
-EXISTS=$(grep "/tmp/" /etc/fstab)
-if [ -z "$EXISTS" ]; then
-	echo "none /tmp tmpfs rw,noexec,nosuid,nodev 0 0" >> /etc/fstab
-else
-	sed -ie '/\s\/tmp\s/ s/defaults/defaults,noexec,nosuid,nodev/' /etc/fstab
-fi
-echo "none /run/shm tmpfs rw,noexec,nosuid,nodev 0 0" >> /etc/fstab
-# Bind /var/tmp to /tmp to apply the same mount options during system boot
-echo "/tmp /var/tmp none bind 0 0" >> /etc/fstab
-# Temporarily make the /tmp directory executable before running apt-get and remove execution flag afterwards. This is because
-# sometimes apt writes files into /tmp and executes them from there.
-echo -e "DPkg::Pre-Invoke{\"mount -o remount,exec /tmp\";};\nDPkg::Post-Invoke {\"mount -o remount /tmp\";};" >> /etc/apt/apt.conf.d/99tmpexec
-chmod 644 /etc/apt/apt.conf.d/99tmpexec
-
-echo -e "${HIGHLIGHT}Configuring automatic updates...${NC}"
-EXISTS=$(grep "APT::Periodic::Update-Package-Lists" /etc/apt/apt.conf.d/20auto-upgrades)
-if [ -z "$EXISTS" ]; then
-	sed '/APT::Periodic::Update-Package-Lists/d' /etc/apt/apt.conf.d/20auto-upgrades
-	echo "APT::Periodic::Update-Package-Lists \"1\";" >> /etc/apt/apt.conf.d/20auto-upgrades
-fi
-
-EXISTS=$(grep "APT::Periodic::Unattended-Upgrade" /etc/apt/apt.conf.d/20auto-upgrades)
-if [ -z "$EXISTS" ]; then
-	sed '/APT::Periodic::Unattended-Upgrade/d' /etc/apt/apt.conf.d/20auto-upgrades
-	echo "APT::Periodic::Unattended-Upgrade \"1\";" >> /etc/apt/apt.conf.d/20auto-upgrades
-fi
-
-EXISTS=$(grep "APT::Periodic::AutocleanInterval" /etc/apt/apt.conf.d/10periodic)
-if [ -z "$EXISTS" ]; then
-	sed '/APT::Periodic::AutocleanInterval/d' /etc/apt/apt.conf.d/10periodic
-	echo "APT::Periodic::AutocleanInterval \"7\";" >> /etc/apt/apt.conf.d/10periodic
-fi
-
-chmod 644 /etc/apt/apt.conf.d/20auto-upgrades
-chmod 644 /etc/apt/apt.conf.d/10periodic
-
 # Protect user home directories.
 echo -e "${HIGHLIGHT}Configuring home directories and shell access...${NC}"
 sed -ie '/^DIR_MODE=/ s/=[0-9]*\+/=0700/' /etc/adduser.conf
@@ -110,5 +71,4 @@ chmod o-w /var/tmp
 echo -e "${HIGHLIGHT}Configuring firewall…  ${NC}"
 ufw enable	
 
-
-echo -e "${HIGHLIGHT}Installation complete.${NC}"
+reboot now
