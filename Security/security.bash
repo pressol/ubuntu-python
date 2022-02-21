@@ -4,14 +4,6 @@
 # https://github.com/ukncsc/Device-Security-Guidance-Configuration-Packs/tree/main/Linux/UbuntuLTS
 
 echo -e "${HIGHLIGHT}Running system updates...${NC}"
-# changing sources list to use mirror instead of ubuntu main report
-echo "
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-updates main restricted universe multiverse
-deb mirror://mirrors.ubuntu.com/mirrors.txt bionic-backports main restricted universe multiverse
-deb http://security.ubuntu.com/ubuntu bionic-security main restricted universe multiverse
-" | tee /etc/apt/sources.list
-# also makes it faster
 
 # Update.
 apt-get update
@@ -21,7 +13,7 @@ apt-get dist-upgrade -y
 apt-get remove -y popularity-contest
 # And install required packages.
 apt-get install -y apparmor-profiles apparmor-utils auditd 
-apt-get install -y clamav clamav-daemon ufw 
+apt-get install -y clamav clamav-daemon apt-utils
 
 # Protect user home directories.
 echo -e "${HIGHLIGHT}Configuring home directories and shell access...${NC}"
@@ -54,16 +46,16 @@ augenrules
 echo "
 [org/gnome/system/location]
 max-accuracy-level='country'
-enabled=false" >> /etc/dconf/db/local.d/00_custom-lock
+enabled=false" | sudo tee --append /etc/dconf/db/local.d/locks/00_custom-lock
 
 echo "/org/gnome/system/location/max-accuracy-level
-/org/gnome/system/location/enabled" >> /etc/dconf/db/local.d/locks/00_custom-lock
+/org/gnome/system/location/enabled" | sudo tee --append /etc/dconf/db/local.d/locks/00_custom-lock
 
 # Further Privacy Setting
 echo "
 [org/gnome/desktop/privacy]
-report-technical-problems=false" >> /etc/dconf/db/local.d/00_custom-lock
-echo "/org/gnome/desktop/privacy/report-technical-problems" >> /etc/dconf/db/local.d/locks/00_custom-lock
+report-technical-problems=false" | sudo tee --append /etc/dconf/db/local.d/locks/00_custom-lock
+echo "/org/gnome/desktop/privacy/report-technical-problems"  | sudo tee --append /etc/dconf/db/local.d/locks/00_custom-lock
 
 dconf update
 
@@ -76,6 +68,3 @@ chmod o-w /var/crash
 chmod o-w /var/metrics
 chmod o-w /var/tmp
 
-# Setting up firewall without any rules.
-echo -e "${HIGHLIGHT}Configuring firewall…  ${NC}"
-ufw enable	
